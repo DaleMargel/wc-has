@@ -8,6 +8,8 @@
 				background-color: white;
 				font-family: sans-serif;
 			}
+			table { border-collapse: collapse }
+			td { border: 1px solid black }
 		</style>
 	</head>
 	<body>
@@ -35,49 +37,46 @@
 			<li>Uses basic browser calls, so it is very fast!</li>
 		</ul>
 
+		<h3>Type in any field below. The text will propagate on tab or enter key</h3>
+
 		<wc-has>
-			<h2>Three synchronized input fields</h2>
-			<p>Type in any field, The text will propagate on tab or enter key</p>
+			<h2>Several synchronized input fields</h2>
+			<p>Data can be shared between any number of fields</p>
 			<input has="a">
 			<input has="a">
 			<input has="a">
+			<input has="a">
 
-			<h2>Input field to paragraph text</h2>
-			<input has="b">
-			<p has="b">this is a test</p>
+			<h2>All types of fields</h2>
+			<p>Data can be shared between different types of fields</p>
+			<table>
+				<tr><td>input field</td><td><input has="b"></td></tr>
+				<tr><td>input field initialized</td><td><input has="b" value="default"></td></tr>
+				<tr><td>wc-input</td><td><wc-input has="b" value="?"></wc-input></td></tr>
+				<tr><td>wc-input initialized</td><td><wc-input has="b" value="default"></wc-input></td></tr>
+				<tr><td>paragraph text</td><td><p has="b">?</p></td></tr>
+				<tr><td>div inner text</td><td><div has="b">?</div></td></tr>
+				<tr><td>span inner text</td><td><span has="b">?</span></td></tr>
+				<tr><td>wc-button using span</td><td><wc-button><span has="b">?</span></wc-button></td></tr>
+				<tr><td>wc-button using has</td><td><wc-button has="b">?</wc-button></td></tr>
+			</table>
 
-			<h2>Input field to div text</h2>
-			<input has="c">
-			<div has="c">this is a test</div>
-
-			<h2>Input field to span text</h2>
-			<input has="d">
-			This is what you typed [<span has="d">???</span>] in the input
-
-			<h2>Input color select value sync with web component using attribute</h2>
-			<p>This is a more complex example. A color input control is connected to a
-				web component (wc-swatch). The input can be set from the swatch, 
-				but is very specific about the color format it accepts. The swatch
-				communicates it's color through a color attribute using a custom
-				event. The use of a custom event allows greater flexibility on
-				how web components can be interconnected. The swatch does not signal
-				its initial state, but this could be done quite easily if needed.
-			</p>
-			<p>Color selector: (hit enter to select)</p>
-			<input has="color" type="color">
-			<p>Color indicator: click to toggle color</p>
-			<wc-enter><wc-swatch has="color" color= "green"></wc-enter>
-
+			<h2>Attribute binding</h2>
+			<p>Data can be bound to element attributes with specific formats</p>
+			<table>
+				<tr><td>color selector</td><td><input has="color" type="color"></td></tr>
+				<tr><td>wc-swatch</td><td><wc-enter><wc-swatch has="color"></wc-enter></td></tr>
+				<tr><td>wc-swatch initialized</td><td><wc-enter><wc-swatch has="color" color= "green"></wc-enter></td></tr>
+			</table>
+			
 			<h2>Functions</h2>
-			<p>The <b>has</b> tag also can execute logic</p>
-			<p>... and the logic can be chained</p>
-			<input has="n1" value="5" />
-			<input has="n2" value="6" />
-			<input has="sum" type="hidden" />
-			<input has="squared" type="hidden" />
-			<!-- TODO: store internally so that we do not need hidden inputs -->
-			<p>The sum of numbers are: <span has="sum">11</span></p>
-			<p>The square of the sum is: <span has="squared">121</span></p>
+			<p>Updates can execute chained logic and initialization</p>
+			<table>
+				<tr><td>input [x]</td><td><input has="x"></td></tr>
+				<tr><td>input [y]</td><td><input has="y"></td></tr>
+				<tr><td>sum x+y </td><td><input has="sum"></td></tr>
+				<tr><td>square sum</td><td><input has="squared"></td></tr>
+			</table>
 		
 		</wc-has>
 
@@ -92,12 +91,15 @@
 		<script type="module" src="./src/wc-has.js" inline></script>
 		<script type="module" src="./libs/wc-swatch.js" inline></script>
 		<script type="module" src="./libs/wc-enter.js" inline></script>
-		<script>
-			// This class contains all calculations.
-			// based on names and arguments, it can determine dependencies.
+		<script type="module" src="./libs/wc-input.js" inline></script>
+		<script type="module" src="./libs/wc-button.js" inline></script>
+		<script type="module">
+			// this must occur after wc-has has loaded
 			class Calc{
-				sum(n1,n2){ return n1+n2 }
-				squared(sum){ return sum**2 }
+				x(){ return 2 } // init x
+				y() { return 3 } // init y
+				sum(x,y){ return x+y } // update sum when x | y changes
+				squared(sum){ return sum**2 } // update square when sum changes
 			}
 			document.querySelector('wc-has').calculations = new Calc();
 		</script>

@@ -11,9 +11,9 @@ class WcEnter extends HTMLElement {
 	}
 	connectedCallback(){
 		const targ = this.shadowRoot.querySelector('slot').assignedNodes()[0];
-		targ.addEventListener('keyup', e => this.click(e));
+		targ.addEventListener('keyup', e => this.hitkey(e));
 	}
-	click(e){
+	hitkey(e){
 		if(e.keyCode != 13) return;
 		e.preventDefault();
 
@@ -22,7 +22,6 @@ class WcEnter extends HTMLElement {
 		targ.dispatchEvent(evt);
 	}
 }
-// export ("WcEnter");
 try{ customElements.define("wc-enter",WcEnter) }
 catch(NotSupportedError){/* duplicate */}
 export { WcEnter }

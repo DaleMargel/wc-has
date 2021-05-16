@@ -21,7 +21,7 @@ class WcHas extends HTMLElement {
 	get calculations(){ return this.calc }
 	set calculations(calc){
 		// accept an object containing calculatons to be used for updates
-		// TODO: explore use of reflection to read functions/args
+		let init = [];
 		this.calc = calc;
 		let names = Object.getOwnPropertyNames(Object.getPrototypeOf(calc));
 		for(let name of names){
@@ -34,8 +34,11 @@ class WcHas extends HTMLElement {
 			if(args[0]==''){
 				let sett = calc[name]();
 				this.putAttribute(name,sett,null);
+				init.push(name);
 			}
 		}
+		// update all elements that depend on initialized values
+		for(let name of init) this.start(name);
 	}
 	map={}; // function / dependency map
 	calc=false; // external calculations
@@ -77,36 +80,36 @@ class WcHas extends HTMLElement {
 		this.putAttribute(name,result,null);
 	}
 	// write value to all tags that "has" them
-	putAttribute(haz,valu,ignore){
-		let list = this.querySelectorAll(`[has~=${haz}]`);
+	putAttribute(name,valu,ignore){
+		let list = this.querySelectorAll(`[has~=${name}]`);
 		for(let item of list){ 
 			if(item === ignore) continue;
 
-			// element with visible attribute
-			if(item.hasAttribute(haz)) { 
-				if(valu != item.getAttribute(haz)) item.setAttribute(haz,valu);
+			// simplest case: element with visible attribute
+			if(item.hasAttribute(name)) { 
+				if(valu != item.getAttribute(name)) item.setAttribute(name,valu);
 				continue;
 			}
-			// web component with declared attribute
+			// web component with observed attribute not used in html
 			if(item.constructor?.observedAttributes){
-				let lchaz=haz.toLowerCase();
-				if(item.constructor?.observedAttributes.includes(lchaz)){
+				let lname=name.toLowerCase();
+				if(item.constructor?.observedAttributes.includes(lname)){
 					// wc uses attribute
-					item.setAttribute(haz,valu);
+					item.setAttribute(name,valu);
 					continue;
 				}
-				else{
-					// wc uses a value instead of attribute
+				// web component with "fake" value, usually wc-input
+				if(item.constructor?.observedAttributes.includes('value')){
 					item.setAttribute('value',valu);
 					continue;
 				}
 			}
-			// element that uses 'value'
+			// element that uses 'value', usually input, or select
 			if(item.value != undefined){ 
 				if(valu != item.value) item.value = valu;
 				continue;	
 			}
-			// element with ONE text child
+			// element with ONE text child, usually p, span or div
 			if(item.childNodes?.length>0){ 
 				let texts = [];
 				for(let x of item.childNodes){ if(x.nodeType==3) texts.push(x) }
@@ -115,6 +118,8 @@ class WcHas extends HTMLElement {
 					continue;
 				}
 			}
+			// did I miss anything?
+			console.log(`wc-has cannot process [${name}]`);
 		}
 	}
 }
@@ -124,5 +129,5 @@ catch(NotSupportedError){/* duplicate */}
 export { WcHas }
 // Code: Copyright © 2021 Dale Margel / Azure Solutions
 // under Creative Commons - Attribution-NonCommercial CC BY-NC
-// Build 2021.05.05
+// Build 2021.05.16
 // Use at your own risk
