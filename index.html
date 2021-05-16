@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>Has</title>
+		<meta charset="utf-8">
+		<style>
+			body { 
+				background-color: white;
+				font-family: sans-serif;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Has</h1>
+		<p><b>Synchronize data on screen</b></p>
+
+		<p>This custom element listens for changes in child elements and sends those
+			changes to other elements that consume it. The technique used here is
+			mostly suited for web components and normal html tags.
+		</p>
+
+		<p>If an html tag needs to be notified when a variable changes, it 
+			will contain a "has" attribute that lists the names of all attributes
+			for which it expects to be notified. The <b>wc-has</b> element is placed as
+			the parent to listen for all 'change' or 'custom' events as they
+			bubble up. It then searches for all elements that need to be notified 
+			and send it to them. 
+		</p>
+		<h2>Features</h2>
+		<ul>
+			<li>Provides a robust and low-impact custom element to synchronize changes</li>
+			<li>Can execute chained functions (like a spreadsheet)</li>
+			<li>The component is small, about 3.8k bytes w/o compression</li>
+			<li>Very easy to use: it just works</li>
+			<li>Uses basic browser calls, so it is very fast!</li>
+		</ul>
+
+		<wc-has>
+			<h2>Three synchronized input fields</h2>
+			<p>Type in any field, The text will propagate on tab or enter key</p>
+			<input has="a">
+			<input has="a">
+			<input has="a">
+
+			<h2>Input field to paragraph text</h2>
+			<input has="b">
+			<p has="b">this is a test</p>
+
+			<h2>Input field to div text</h2>
+			<input has="c">
+			<div has="c">this is a test</div>
+
+			<h2>Input field to span text</h2>
+			<input has="d">
+			This is what you typed [<span has="d">???</span>] in the input
+
+			<h2>Input color select value sync with web component using attribute</h2>
+			<p>This is a more complex example. A color input control is connected to a
+				web component (wc-swatch). The input can be set from the swatch, 
+				but is very specific about the color format it accepts. The swatch
+				communicates it's color through a color attribute using a custom
+				event. The use of a custom event allows greater flexibility on
+				how web components can be interconnected. The swatch does not signal
+				its initial state, but this could be done quite easily if needed.
+			</p>
+			<p>Color selector: (hit enter to select)</p>
+			<input has="color" type="color">
+			<p>Color indicator: click to toggle color</p>
+			<wc-enter><wc-swatch has="color" color= "green"></wc-enter>
+
+			<h2>Functions</h2>
+			<p>The <b>has</b> tag also can execute logic</p>
+			<p>... and the logic can be chained</p>
+			<input has="n1" value="5" />
+			<input has="n2" value="6" />
+			<input has="sum" type="hidden" />
+			<input has="squared" type="hidden" />
+			<!-- TODO: store internally so that we do not need hidden inputs -->
+			<p>The sum of numbers are: <span has="sum">11</span></p>
+			<p>The square of the sum is: <span has="squared">121</span></p>
+		
+		</wc-has>
+
+		<br>
+		<h1>Notes</h1>
+		<ul>
+			<li>value changes are handled automatically</li>
+			<li>attribute changes must emit a custom 'attribute' event</li>
+			<li>some input tags use specific value formatting, this cannot be helped</li>
+			<li><b>see this html file for example of how to use 'has' feature</b></li>
+		</ul>
+		<script type="module" src="./src/wc-has.js" inline></script>
+		<script type="module" src="./libs/wc-swatch.js" inline></script>
+		<script type="module" src="./libs/wc-enter.js" inline></script>
+		<script>
+			// This class contains all calculations.
+			// based on names and arguments, it can determine dependencies.
+			class Calc{
+				sum(n1,n2){ return n1+n2 }
+				squared(sum){ return sum**2 }
+			}
+			document.querySelector('wc-has').calculations = new Calc();
+		</script>
+	</body>
+</html>
