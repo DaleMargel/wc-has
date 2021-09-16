@@ -74,39 +74,57 @@ class WcHas extends HTMLElement {
 
 			//let value = document.querySelector(`[has=${arg}]`).value;
 			if(typeof value === 'undefined') return;
-			args.push(parseFloat(value));
+
+			// convert string value to base type, for now float or string
+			let v = parseFloat(value) || value;
+			args.push(v);
 		}
 		const result = this.calc[name](...args);
 		this.putAttribute(name,result,null);
 	}
 	// write value to all tags that "has" them
 	putAttribute(name,valu,ignore){
+
+		// only stringify objects; others stingify ok
+		const stringify = o => (typeof o !== 'object') || o === null ? o : JSON.stringify(o);
+
 		let list = this.querySelectorAll(`[has~=${name}]`);
 		for(let item of list){ 
 			if(item === ignore) continue;
 
 			// simplest case: element with visible attribute
-			if(item.hasAttribute(name)) { 
-				if(valu != item.getAttribute(name)) item.setAttribute(name,valu);
+			if(item.hasAttribute(name)) {
+				let s = stringify(valu);
+				if(s != item.getAttribute(name)) item.setAttribute(name,s);
 				continue;
+			}
+			// element has a setter property matching name (set directly)
+			const proto = Object.getPrototypeOf(item);
+			const desc = Object.getOwnPropertyDescriptor(proto,name);
+			if(desc?.set){
+					item[name] = valu;
+					continue;
 			}
 			// web component with observed attribute not used in html
 			if(item.constructor?.observedAttributes){
 				let lname=name.toLowerCase();
 				if(item.constructor?.observedAttributes.includes(lname)){
 					// wc uses attribute
-					item.setAttribute(name,valu);
+					let s = stringify(valu);
+					item.setAttribute(name,s);
 					continue;
 				}
-				// web component with "fake" value, usually wc-input
+				// web component with synthetic "value" attribute, usually wc-input
 				if(item.constructor?.observedAttributes.includes('value')){
-					item.setAttribute('value',valu);
+					let s = stringify(valu);
+					item.setAttribute('value',s);
 					continue;
 				}
 			}
 			// element that uses 'value', usually input, or select
-			if(item.value != undefined){ 
-				if(valu != item.value) item.value = valu;
+			if(item.value != undefined){
+				let s = stringify(valu);
+				if(s != item.value) item.value = s;
 				continue;	
 			}
 			// element with ONE text child, usually p, span or div
@@ -114,7 +132,7 @@ class WcHas extends HTMLElement {
 				let texts = [];
 				for(let x of item.childNodes){ if(x.nodeType==3) texts.push(x) }
 				if(texts.length == 1) { 
-					texts[0].textContent = valu;
+					texts[0].textContent = stringify(valu);
 					continue;
 				}
 			}
@@ -129,5 +147,5 @@ catch(NotSupportedError){/* duplicate */}
 export { WcHas }
 // Code: Copyright © 2021 Dale Margel / Azure Solutions
 // under Creative Commons - Attribution-NonCommercial CC BY-NC
-// Build 2021.05.16
+// Build 2021.08.07
 // Use at your own risk
